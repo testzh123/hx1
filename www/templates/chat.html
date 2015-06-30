@@ -1,0 +1,30 @@
+<ion-view view-title="与{{userInfo.chatTarget.Nickname}}对话中">
+
+    <ion-nav-buttons side="right">
+        <button class="button button-clear icon-left ion-ios-arrow-back" ng-click="jumpTo('friendsList')">
+            返回
+        </button>
+    </ion-nav-buttons>
+
+    <ion-nav-title>
+        与{{userInfo.chatTarget.Nickname}}对话中
+    </ion-nav-title>
+
+    <ion-content delegate-handle="mainScroll"  on-swipe-right="onSwipeRight()"  on-swipe-left="onSwipeLeft()">
+        <div ng-repeat="x in userInfo.chat[userInfo.chatTarget.Account]" style="margin-top:10px;width:100%;float:left;">
+            <div ng-style="getStyle(x)">{{x.Text}}</div>
+            <div ng-style="getStyle2()">{{test1(x.Time,'x').fromNow()}}</div>
+        </div>
+
+    </ion-content>
+
+    <ion-footer-bar keyboard-attach class="bar-stable item-input-inset">
+        <label class="item-input-wrapper">
+            <input type="text" placeholder="内容。。。" on-return="sendMessage()" ng-model="message"/>
+        </label>
+        <button class="button button-clear" ng-click="sendMessage()">
+            发送
+        </button>
+    </ion-footer-bar>
+
+</ion-view>

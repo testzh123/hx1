@@ -1,0 +1,53 @@
+<ion-view view-title="{{userInfo.Nickname}}的特征">
+    <ion-nav-buttons side="right">
+        <button class="button button-clear icon-left ion-ios-arrow-back" ng-click="goBack()">
+            返回
+        </button>
+    </ion-nav-buttons>
+    <ion-nav-title>
+        {{userInfo.Nickname}}的特征
+    </ion-nav-title>
+    <ion-content>
+
+        <a class="item item-icon-left" href="javascript:void(0)" ng-click="jumpTo('psFaxing')">
+            <i class="icon ion-ios-person"></i>
+            发型
+            <span class="item-note" ng-bind="userInfo.SpecialInfo.FaXing">
+            </span>
+        </a>
+        <a class="item item-icon-left" href="javascript:void(0)" ng-click="jumpTo('psYanjing')">
+            <i class="icon ion-ios-glasses-outline"></i>
+            眼镜
+            <span class="item-note" ng-bind="userInfo.SpecialInfo.YanJing">
+            </span>
+        </a>
+        <a class="item item-icon-left" href="javascript:void(0)" ng-click="jumpTo('psYifuleixing')">
+            <i class="icon ion-tshirt"></i>
+            衣服类型
+            <span class="item-note" ng-bind="userInfo.SpecialInfo.YiFuLeiXing">
+            </span>
+        </a>
+        <a class="item item-icon-left" href="javascript:void(0)" ng-click="jumpTo('psYifuyanse')">
+            <i class="icon ion-ios-color-wand-outline"></i>
+            衣服颜色
+            <span class="item-note" ng-bind="userInfo.SpecialInfo.YiFuYanSe">
+            </span>
+        </a>
+        <a class="item item-icon-left" href="javascript:void(0)" ng-click="jumpTo('psYifuhuawen')">
+            <i class="icon ion-load-b"></i>
+            衣服花纹
+            <span class="item-note" ng-bind="userInfo.SpecialInfo.YiFuHuaWen">
+            </span>
+        </a>
+
+        <div style="position:relative;top:35px;" align="center">
+            <button class="button button-positive button-block"
+                    style="width:80%;margin:0 auto;" ng-click="getPhoto()">
+                拍摄新特征照片
+            </button>
+
+            <img id="myPhoto" src="" style="height:240px;width:240px;position:relative;top:50px;border:none;"></img>
+        </div>
+
+    </ion-content>
+</ion-view>

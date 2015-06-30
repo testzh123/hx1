@@ -1,0 +1,86 @@
+<ion-view view-title="邂逅详情">
+    <ion-nav-buttons side="right">
+        <button class="button button-clear icon-left ion-ios-arrow-back" ng-click="jumpTo('accountMain')">
+            返回
+        </button>
+    </ion-nav-buttons>
+    <ion-nav-title>
+        邂逅详情
+    </ion-nav-title>
+
+    <ion-content>
+
+        <a class="item item-icon-left item-icon-right" href="javascript:void(0)"
+           style="position:relative;top:30px;">
+            状态
+            <span class="item-note" ng-bind="currentMeetInfo.Status">
+            </span>
+        </a>
+
+        <a class="item item-icon-left item-icon-right" href="javascript:void(0)"
+           style="position:relative;top:30px;">
+            时间
+            <span class="item-note" ng-bind="currentMeetInfo.Time">
+            </span>
+        </a>
+
+        <a class="item item-icon-left item-icon-right" href="javascript:void(0)"
+           style="position:relative;top:30px;">
+            <i class="icon ion-transgender"></i>
+            性别
+            <span class="item-note" ng-bind="currentMeetInfo.Sex">
+            </span>
+        </a>
+
+        <a class="item item-icon-left item-icon-right" href="javascript:void(0)"
+           style="position:relative;top:30px;">
+            <i class="icon ion-ios-location"></i>
+            地点
+            <span class="item-note" ng-bind="currentMeetInfo.Address">
+            </span>
+        </a>
+
+        <a class="item item-icon-left item-icon-right" href="javascript:void(0)" style="position:relative;top:30px;">
+            <i class="icon ion-ios-person"></i>
+            发型
+            <span class="item-note" ng-bind="currentMeetInfo.FaXing">
+            </span>
+        </a>
+
+        <a class="item item-icon-left item-icon-right" href="javascript:void(0)" style="position:relative;top:30px;">
+            <i class="icon ion-ios-glasses-outline"></i>
+            眼镜
+            <span class="item-note" ng-bind="currentMeetInfo.YanJing">
+            </span>
+        </a>
+
+        <a class="item item-icon-left item-icon-right" href="javascript:void(0)" style="position:relative;top:30px;">
+            <i class="icon ion-tshirt"></i>
+            衣服类型
+            <span class="item-note" ng-bind="currentMeetInfo.YiFuLeiXing">
+            </span>
+        </a>
+
+        <a class="item item-icon-left item-icon-right" href="javascript:void(0)" style="position:relative;top:30px;">
+            <i class="icon ion-ios-color-wand-outline"></i>
+            衣服颜色
+            <span class="item-note" ng-bind="currentMeetInfo.YiFuYanSe">
+            </span>
+        </a>
+
+        <a class="item item-icon-left item-icon-right" href="javascript:void(0)" style="position:relative;top:30px;">
+            <i class="icon ion-load-b"></i>
+            衣服花纹
+            <span class="item-note" ng-bind="currentMeetInfo.YiFuHuaWen">
+            </span>
+        </a>
+
+
+        <div align="center">
+            <img id="myImage" src="" style="height:240px;width:240px;position:relative;top:50px;border:none;"></img>
+        </div>
+
+
+    </ion-content>
+
+</ion-view>

@@ -1,0 +1,25 @@
+<ion-view view-title="Ta的特征图片">
+    <ion-nav-buttons side="right">
+        <button class="button button-clear icon-left ion-ios-arrow-back" ng-click="noMatch()">
+            返回
+        </button>
+    </ion-nav-buttons>
+    <ion-nav-title>
+        Ta的特征图片
+    </ion-nav-title>
+
+    <ion-content>
+
+        <div align="center"><img id="image1" ng-repeat="x in userInfo.valids" src="{{url1+x.Image}}" ng-click="pick(x)"
+                                 style="position:relative;width:40%;top:30px;margin-left:5%;margin-right:5%;margin-top:30px;">
+            </img>
+
+            <button class="button icon ion-heart-broken button-light" id="exitButton"
+                    style="position:relative;top:50px;width:80%;margin:0 auto;" ng-click="noMatch()">
+                不在其中
+            </button>
+        </div>
+
+    </ion-content>
+
+</ion-view>

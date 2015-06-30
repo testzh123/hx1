@@ -1,0 +1,24 @@
+<ion-view view-title="Ta的特征图片">
+    <ion-nav-buttons side="right">
+        <button class="button button-clear icon-left ion-ios-arrow-back" ng-click="jumpTo('imageReview2')">
+            返回
+        </button>
+    </ion-nav-buttons>
+    <ion-nav-title>
+        Ta的特征图片
+    </ion-nav-title>
+
+    <ion-content>
+
+        <div align="center">
+            <img src="{{url1+userInfo.select.Image}}" style="position:relative;width:80%;top:30px;">
+            </img>
+
+            <button class="button icon ion-heart button-assertive" style="position:relative;top:50px;width:80%;margin:0 auto;" ng-click="pick()">
+                就是Ta!
+            </button>
+        </div>
+
+    </ion-content>
+
+</ion-view>

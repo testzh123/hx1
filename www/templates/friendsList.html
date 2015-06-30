@@ -1,0 +1,36 @@
+<ion-view view-title="{{userInfo.Nickname}}的朋友圈">
+
+    <ion-nav-title>
+        {{userInfo.Nickname}}的朋友圈
+    </ion-nav-title>
+
+    <ion-content id="mainContent">
+        <ion-list>
+            <ion-item ng-repeat="x in userInfo.Friends" ng-click="openChat(x)" style="height:100px;">
+                <img ng-src="{{url1+x.Image}}" style="height:80px;width:80px;top:-5px;position:relative;"></img>
+                <p style="position:absolute;left:120px;top:35px;font-size:30px;font-weight:500;">{{x.Nickname}}</p>
+                <span class="badge badge-assertive" style="position:absolute;top:30px;right:40px;width:50px;" ng-bind="getNew(x.Account)"></span>
+                <ion-option-button class="button-assertive" ng-click="deleteFriend(x)">
+                    删除好友
+                </ion-option-button>
+            </ion-item>
+        </ion-list>
+    </ion-content>
+
+    <div class="bar" style="position:absolute;bottom:1px;height:59px;background-color: #d9edf7;"  align="center">
+        <div class="row">
+            <div class="col">
+                <button class="button button-icon icon ion-ios-at" style="width:100%;height:100%;" ng-click="jumpTo('accountMain')"></button>
+            </div>
+            <div class="col">
+                <button class="button button-icon icon ion-android-people" style="width:100%;height:100%;" ng-click="jumpTo('friendsList')">
+                    <span class="badge badge-assertive" style="position:absolute;top:0px;left:70%;width:30px;"  ng-bind="getNew()" id="span_total"></span>
+                </button>
+            </div>
+            <div class="col">
+                <button class="button button-icon icon ion-gear-b" style="width:100%;height:100%;" ng-click="jumpTo('accountSetting')"></button>
+            </div>
+        </div>
+    </div>
+
+</ion-view>

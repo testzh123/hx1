@@ -1,0 +1,46 @@
+<ion-view view-title="注册">
+
+    <ion-nav-buttons side="right" ng-controller="accountRegistCtrl">
+        <button class="button button-clear icon-left ion-ios-arrow-back" ng-click="jumpTo('accountLogin')">
+            返回
+        </button>
+    </ion-nav-buttons>
+
+    <ion-content>
+        <div style="position:absolute;top:20px;width:100%;" ng-controller="accountRegistCtrl">
+            <label class="item item-input item-floating-label">
+                <span class="input-label">账号</span>
+                <input type="text" placeholder="账号" ng-model="userAccount">
+            </label>
+
+            <label class="item item-input item-floating-label">
+                <span class="input-label">昵称</span>
+                <input type="text" placeholder="昵称" ng-model="userName">
+            </label>
+
+            <label class="item item-input item-floating-label">
+                <span class="input-label">密码</span>
+                <input type="password" placeholder="密码" ng-model="userPassword">
+            </label>
+
+            <label class="item item-input item-floating-label">
+                <span class="input-label">确认密码</span>
+                <input type="password" placeholder="确认密码" ng-model="userPasswordR">
+            </label>
+
+            <div class="list" style="position:relative;top:50px;width:150px;margin:0 auto;">
+                <input type="radio" name="radioSex" id="radioSex1" value="男" class="css-checkbox"/><label
+                    for="radioSex1"
+                    class="css-label">男</label>
+                <input type="radio" name="radioSex" id="radioSex2" value="女" class="css-checkbox"/><label
+                    for="radioSex2"
+                    class="css-label">女</label>
+            </div>
+            <button class="button button-calm button-block"
+                    style="position:relative;top:100px;width:80%;margin:0 auto;" ng-click="regist()">
+                确认注册
+            </button>
+        </div>
+    </ion-content>
+
+</ion-view>

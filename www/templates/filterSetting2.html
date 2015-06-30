@@ -1,0 +1,72 @@
+<ion-view view-title="邂逅回复">
+    <ion-nav-buttons side="right">
+        <button class="button button-clear icon-left ion-ios-arrow-back" ng-click="jumpTo('accountMain')">
+            返回
+        </button>
+    </ion-nav-buttons>
+    <ion-nav-title>
+        邂逅回复
+    </ion-nav-title>
+
+    <ion-content>
+
+        <a class="item item-icon-left item-icon-right" href="javascript:void(0)"
+           style="position:relative;top:30px;">
+            <i class="icon ion-ios-location"></i>
+            邂逅地点
+            <span class="item-note" ng-bind="userInfo.filter.Address">
+            </span>
+        </a>
+
+        <a class="item item-icon-left item-icon-right" href="javascript:void(0)"
+           style="position:relative;top:30px;" ng-click="jumpTo('msXingbie')">
+            <i class="icon ion-transgender"></i>
+            性别
+            <span class="item-note" ng-bind="userInfo.filter.Sex">
+            </span>
+        </a>
+
+        <a class="item item-icon-left item-icon-right" href="javascript:void(0)" style="position:relative;top:30px;"
+           ng-click="jumpTo('msFaxing')">
+            <i class="icon ion-ios-person"></i>
+            发型
+            <span class="item-note" ng-bind="userInfo.filter.FaXing">
+            </span>
+        </a>
+        <a class="item item-icon-left item-icon-right" href="javascript:void(0)" style="position:relative;top:30px;"
+           ng-click="jumpTo('msYanjing')">
+            <i class="icon ion-ios-glasses-outline"></i>
+            眼镜
+            <span class="item-note" ng-bind="userInfo.filter.YanJing">
+            </span>
+        </a>
+        <a class="item item-icon-left item-icon-right" href="javascript:void(0)" style="position:relative;top:30px;"
+           ng-click="jumpTo('msYifuleixing')">
+            <i class="icon ion-tshirt"></i>
+            衣服类型
+            <span class="item-note" ng-bind="userInfo.filter.YiFuLeiXing">
+            </span>
+        </a>
+        <a class="item item-icon-left item-icon-right" href="javascript:void(0)" style="position:relative;top:30px;"
+           ng-click="jumpTo('msYifuyanse')">
+            <i class="icon ion-ios-color-wand-outline"></i>
+            衣服颜色
+            <span class="item-note" ng-bind="userInfo.filter.YiFuYanSe">
+            </span>
+        </a>
+        <a class="item item-icon-left item-icon-right" href="javascript:void(0)" style="position:relative;top:30px;"
+           ng-click="jumpTo('msYifuhuawen')">
+            <i class="icon ion-load-b"></i>
+            衣服花纹
+            <span class="item-note" ng-bind="userInfo.filter.YiFuHuaWen">
+            </span>
+        </a>
+
+        <div align="center" style="position:relative;top:70px;">
+            <button class="button icon ion-android-search button-balanced" style="width:80%" ng-click="submit()">
+            </button>
+        </div>
+
+    </ion-content>
+
+</ion-view>

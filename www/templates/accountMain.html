@@ -1,0 +1,41 @@
+<ion-view view-title="{{userInfo.Nickname}}的嗨羞">
+
+    <ion-nav-buttons side="left">
+        <button class="button button-icon icon ion-plus-round"  ng-click="filterUI()"></button>
+    </ion-nav-buttons>
+    <ion-nav-buttons side="right">
+        <button class="button button-icon icon ion-ios-body" ng-click="jumpTo('styleSetting')"></button>
+    </ion-nav-buttons>
+    <ion-nav-title>
+        {{userInfo.Nickname}}的嗨羞
+    </ion-nav-title>
+
+    <ion-content id="mainContent">
+
+            <div ng-repeat="x in userInfo.meetInfo" class="item"  style="height:120px;width:100%;" ng-click="doMeet(x._id)">
+                <img ng-src="{{getSrc(x)}}" style="height:80px;width:80px;position:absolute;left:20px;top:20px;border:none;"></img>
+                <p style="position:absolute;top:10px;font-weight:600;font-size:18px;left:120px;">{{x.Address}}</p>
+                <p style="position:absolute;top:50px;font-weight:600;font-size:18px;left:120px;" ng-bind="getStatus(x)"></p>
+                <p style="position:absolute;top:90px;font-weight:600;font-size:18px;left:120px;" ng-bind="getTime(x.UpdatedTime)"></p>
+                <span class="badge badge-assertive" style="position:absolute; top:90px;right:30px;width:50px;height:25px;" ng-bind="getInfo(x)"></span>
+            </div>
+
+    </ion-content>
+    <div class="bar" style="position:absolute;bottom:1px;height:59px;background-color: #d9edf7;"  align="center">
+        <div class="row">
+            <div class="col">
+                <button class="button button-icon icon ion-ios-at" style="width:100%;height:100%;" ng-click="jumpTo('accountMain')"></button>
+            </div>
+            <div class="col">
+                <button class="button button-icon icon ion-android-people" style="width:100%;height:100%;" ng-click="jumpTo('friendsList')">
+                    <span class="badge badge-assertive" style="position:absolute;top:0px;left:70%;width:30px;"  ng-bind="getNew()" id="span_total"></span>
+                </button>
+            </div>
+            <div class="col">
+                <button class="button button-icon icon ion-gear-b" style="width:100%;height:100%;" ng-click="jumpTo('accountSetting')"></button>
+            </div>
+        </div>
+    </div>
+
+</ion-view>
+

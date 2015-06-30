@@ -1,0 +1,24 @@
+<ion-view view-title="设置">
+    <ion-nav-buttons side="right" ng-controller="accountRegistCtrl">
+        <button class="button button-clear icon-left ion-ios-arrow-back" ng-click="jumpTo('accountMain')">
+            返回
+        </button>
+    </ion-nav-buttons>
+    <ion-nav-title>
+        {{userInfo.Nickname}}的设置
+    </ion-nav-title>
+    <ion-content>
+        <button class="button button-positive button-block"
+                style="position:relative;top:50px;width:80%;margin:0 auto;" ng-click="exitLogin()">
+            退出当前账号
+        </button>
+
+        <button class="button button-positive button-block" id="updateButton"
+                style="position:relative;top:100px;width:80%;margin:0 auto;" ng-click="updateAddress()">
+            更新位置信息
+        </button>
+
+        <div id="my-map" style="position:relative;top:130px;height:300px;width:300px;margin:0 auto;"></div>
+
+    </ion-content>
+</ion-view>
