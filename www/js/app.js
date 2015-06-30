@@ -160,11 +160,13 @@ angular.module('starter', ['ionic', 'starter.controllers', 'DBService'])
                     $rootScope.$apply(function () {
                         $rootScope.userInfo.Meetings.push(data._id);
                         $rootScope.userInfo.meetInfo[data._id] = data;
+                        $rootScope.userInfo.meetInfo[data._id].Alert = 'new';
                     });
                 });
 
                 $rootScope.socket.on('meetClose', function (id) {
                     $rootScope.$apply(function () {
+                        $rootScope.userInfo.meetInfo[id].Alert = 'new';
                         $rootScope.userInfo.meetInfo[id].Status = 3;
                         $rootScope.userInfo.meetInfo[id].UpdatedTime = new Date().getTime();
                     });
@@ -212,6 +214,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'DBService'])
                 {
                     $rootScope.$apply(function () {
                         $rootScope.userInfo.meetInfo[data.mid].Status = 2;
+                        $rootScope.userInfo.meetInfo[id].Alert = 'new';
                         $rootScope.userInfo.meetInfo[data.mid].UpdatedTime = new Date().getTime();
                     });
                 })
