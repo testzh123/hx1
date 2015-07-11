@@ -1,7 +1,7 @@
-<ion-view view-title="{{userInfo.Nickname}}的特征">
-    <ion-nav-buttons side="right">
+<ion-view view-title="{{userInfo.Nickname}}的特征" can-swipe-back=false>
+    <ion-nav-buttons side="left">
         <button class="button button-clear icon-left ion-ios-arrow-back" ng-click="goBack()">
-            返回
+            确定
         </button>
     </ion-nav-buttons>
     <ion-nav-title>
@@ -9,45 +9,47 @@
     </ion-nav-title>
     <ion-content>
 
-        <a class="item item-icon-left" href="javascript:void(0)" ng-click="jumpTo('psFaxing')">
+        <a class="item item-icon-left" href="javascript:void(0)" ng-click="goTo('psFaxing')">
             <i class="icon ion-ios-person"></i>
             发型
             <span class="item-note" ng-bind="userInfo.SpecialInfo.FaXing">
             </span>
         </a>
-        <a class="item item-icon-left" href="javascript:void(0)" ng-click="jumpTo('psYanjing')">
+        <a class="item item-icon-left" href="javascript:void(0)" ng-click="goTo('psYanjing')">
             <i class="icon ion-ios-glasses-outline"></i>
             眼镜
             <span class="item-note" ng-bind="userInfo.SpecialInfo.YanJing">
             </span>
         </a>
-        <a class="item item-icon-left" href="javascript:void(0)" ng-click="jumpTo('psYifuleixing')">
+        <a class="item item-icon-left" href="javascript:void(0)" ng-click="goTo('psYifuleixing')">
             <i class="icon ion-tshirt"></i>
             衣服类型
             <span class="item-note" ng-bind="userInfo.SpecialInfo.YiFuLeiXing">
             </span>
         </a>
-        <a class="item item-icon-left" href="javascript:void(0)" ng-click="jumpTo('psYifuyanse')">
+        <a class="item item-icon-left" href="javascript:void(0)" ng-click="goTo('psYifuyanse')">
             <i class="icon ion-ios-color-wand-outline"></i>
             衣服颜色
             <span class="item-note" ng-bind="userInfo.SpecialInfo.YiFuYanSe">
             </span>
         </a>
-        <a class="item item-icon-left" href="javascript:void(0)" ng-click="jumpTo('psYifuhuawen')">
+        <a class="item item-icon-left" href="javascript:void(0)" ng-click="goTo('psYifuhuawen')">
             <i class="icon ion-load-b"></i>
             衣服花纹
             <span class="item-note" ng-bind="userInfo.SpecialInfo.YiFuHuaWen">
             </span>
         </a>
 
-        <div style="position:relative;top:35px;" align="center">
-            <button class="button button-positive button-block"
-                    style="width:80%;margin:0 auto;" ng-click="getPhoto()">
-                拍摄新特征照片
-            </button>
+        <div style="position:relative;top:20px;font-size:16px;text-align:center;">请拍一张能让别人识别你的照片</div>
 
-            <img id="myPhoto" src="" style="height:240px;width:240px;position:relative;top:50px;border:none;"></img>
+        <div style="position:relative;top:35px;float:left;width:100%;height:200px;top:40px;">
+            <img id="myPhoto" ng-src="{{myImage()}}" style="width:150px;height:150px;position:absolute;border:none;left:6%;top:0%;"></img>
+            <button class="button button-positive button-block"
+                    style="position:absolute;width:25%;top:30%;right:10%;" ng-click="getPhoto()">
+                拍摄
+            </button>
         </div>
+
 
     </ion-content>
 </ion-view>

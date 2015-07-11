@@ -15,22 +15,27 @@ var meetDB = require('./MeetingDBManager');
 var msgDB = require('./MessageDBManager');
 var asMap = {};
 var iaMap = {};
+var pmMap = {};
+var pushMap = {};
 
 var pushMsg = function(uid,msg)
 {
-    JPushclient.push().setPlatform(JPush.ALL)
-        .setAudience(JPush.alias(uid))
-        .setNotification('Hi, JPush', JPush.ios(msg))
-        .send(function(err, res) {
-            if (err) {
-                console.log(err.message);
-            } else {
-                console.log('Sendno: ' + res.sendno);
-                console.log('Msg_id: ' + res.msg_id);
-            }
-        });
+    if(pushMap[uid]==undefined || new Date().getTime()-pushMap[uid]>=600000)
+    {
+        pushMap[uid] = new Date().getTime();
+        JPushclient.push().setPlatform(JPush.ALL)
+            .setAudience(JPush.alias(uid))
+            .setNotification('Hi, JPush', JPush.ios(msg))
+            .send(function(err, res) {
+                if (err) {
+                    console.log(err.message);
+                } else {
+                    console.log('Sendno: ' + res.sendno);
+                    console.log('Msg_id: ' + res.msg_id);
+                }
+            });
+    }
 }
-
 
 var styleMatch= function(s1,s2)
 {
@@ -59,17 +64,21 @@ var DBRouter = function (p, req, res) {
         }
 
         if (p.query.function == 'accountLogin') {
-            accountDB.getInfo(p.query.account, p.query.password, function (msg) {
+            accountDB.logIn(p.query.account, p.query.password, function (msg) {
                 var js = JSON.parse(msg);
-                if (js.Online == 1 && asMap[p.query.account] != undefined) {
+                if (asMap[p.query.account] != undefined) {
                     asMap[p.query.account].emit('quit', "");
                     iaMap[asMap[p.query.account].id] = undefined;
-                    //asMap[p.query.account].disconnect();
                     asMap[p.query.account] = undefined;
                 }
                 res.writeHead(200, 'charset=utf-8');
                 res.end(p.query.callback + '(' + msg + ')');
             })
+        }
+
+        if(p.query.function == 'getImage')
+        {
+            getImage2(p,req,res);
         }
 
     }
@@ -81,26 +90,59 @@ var DBRouter = function (p, req, res) {
 
 
 var getImage = function (p, req, res) {
-    if (p.query.id != undefined && p.query.id.length>0) {
+    if (p.query.id != undefined && p.query.id.length>1) {
         imageDB.get(p.query.id, function (msg) {
             //console.log(msg);
             if (msg == 1 || msg == 2) {
                 res.end();
             }
             else {
+                var d = msg.Data.substr(msg.Data.indexOf(',')+1);
+                d = new Buffer(d,'base64')
                 res.writeHead(200, {"Content-type": "image/"+msg.Type});
-                res.end(msg.Data);
+                res.end(d);
             }
         })
     }
     else {
-        imageDB.get('558a87cc81c16d860661d3b7', function (msg) {
+        imageDB.get('0', function (msg) {
             if (msg == 1 || msg == 2) {
                 res.end();
             }
             else {
+                var d = msg.Data.substr(msg.Data.indexOf(',')+1);
+                d = new Buffer(d,'base64')
                 res.writeHead(200, {"Content-type": "image/"+msg.Type});
-                res.end(msg.Data);
+                res.end(d);
+            }
+        })
+    }
+}
+
+var getImage2 = function (p, req, res) {
+    if (p.query.id != undefined && p.query.id.length>1) {
+        imageDB.get(p.query.id, function (msg) {
+            //console.log(msg);
+            if (msg == 1 || msg == 2) {
+                res.end();
+            }
+            else {
+                res.writeHead(200, 'charset=utf-8');
+                msg.Status =='success';
+                console.log(msg);
+                res.end(p.query.callback + '(' + msg + ')');
+            }
+        })
+    }
+    else {
+        imageDB.get('0', function (msg) {
+            if (msg == 1 || msg == 2) {
+                res.end();
+            }
+            else {
+                res.writeHead(200, 'charset=utf-8');
+                console.log(msg);
+                res.end(p.query.callback + '(' + msg.Data + ')');
             }
         })
     }
@@ -144,24 +186,47 @@ var io = require('socket.io')(server);
 io.on('connection', function (socket) {
 
     socket.on('setAccount', function (data) {
-        accountDB.logIn(data,function(msg){});
         iaMap[socket.id] = data+"";
         asMap[data+""] = socket;
+        console.log("Account " + data + " log in . ");
+    });
+
+    socket.on('disconnect', function () {
+        var account = iaMap[socket.id];
+        if (account != undefined) {
+            console.log("Account " + account + " log out . ");
+            asMap[account] = undefined;
+            iaMap[socket.id] = undefined;
+        }
+    });
+
+    socket.on('myInfo',function(data,fn)
+    {
+        accountDB.getAccount(data.uid,function(res0)
+        {
+            if(res0!=null)
+            {
+                meetDB.getMeets(res0.Meetings,function(res1)
+                {
+                    msgDB.get(data.uid,function(res2)
+                    {
+                        fn({uinfo:res0,meet: res1,msgs:res2});
+                    });
+                });
+            }
+        })
     });
 
     socket.on('updateGPS',function(data)
     {
-        //console.log(JSON.stringify(data));
         accountDB.updateGPS(data.account,data.log,data.lat,function(msg){});
     });
 
-    socket.on('updateImage',function(data)
+    socket.on('updateImageS',function(data)
     {
-        //console.log("12345");
-        var tmp = new Buffer(data.data, 'base64');
-        imageDB.add(tmp, data.type, function (id) {
-            socket.emit('updateImage2',id);
-            accountDB.updateImage(data.account, id, function (r2) {});
+        imageDB.add(data.id,data.data, data.type, function (id) {
+            //socket.emit('updateImageC',data.id);
+            accountDB.updateImage(data.account, data.id, function (r2) {});
         });
     });
 
@@ -202,11 +267,11 @@ io.on('connection', function (socket) {
     socket.on('meet',function(data)
     {
         console.log(JSON.stringify(data));
-        accountDB.checkMeetTime(data.account,function(res0)
-        {
+       accountDB.checkMeetTime(data.account,function(res0)
+       {
             if(res0!=null && new Date().getTime()-res0.MeetingSent.update>30000)
             {
-                meetDB.add(data.account,data.image,data.ss,data.Sex,data.FaXing,data.location,data.YanJing,data.YiFuLeiXing,data.YiFuYanSe,data.YiFuHuaWen,data.cood,function(res1)
+                meetDB.add(data.account,data.image,data.ss,data.Sex,data.FaXing,data.location,data.YanJing,data.YiFuLeiXing,data.YiFuYanSe,data.YiFuHuaWen,data.cood,data.senderStyle,function(res1)
                 {
                     accountDB.updateMeetTime(data.account,function(msg){});
                     accountDB.searchNear(data.Sex,data.cood,data.meetings,function(res2)
@@ -223,7 +288,6 @@ io.on('connection', function (socket) {
                             if(obj.SpecialInfo.FaXing.length==0 || obj.SpecialInfo.YanJing.length==0 || obj.SpecialInfo.YiFuHuaWen.length==0
                                 || obj.SpecialInfo.YiFuLeiXing.length==0 || obj.SpecialInfo.YiFuYanSe.length==0)
                             {
-                                //console.log(obj.Account);
                                 uncomplete.push(obj.Account);
                             }
                             else
@@ -231,7 +295,6 @@ io.on('connection', function (socket) {
                                 var num =styleMatch(obj.SpecialInfo,data);
                                 if(num>=4)
                                 {
-                                    //console.log(obj.Account+" // "+num);
                                     valid.push({Account:obj.Account,Image:obj.Image});
                                 }
                             }
@@ -239,22 +302,9 @@ io.on('connection', function (socket) {
 
                         accountDB.addMeet(data.account,res1._id,function(msg){});
                         meetDB.updateValids(res1._id,valid,function(msg){});
-                        //console.log(valid);
                         socket.emit('meetRes1',{meet:res1,valids:valid,status:'success'});
-                        accountDB.updateWaitedMeetings(uncomplete,res1._id,function(err){});
-                       // console.log("!!!"+uncomplete);
-                        for(ti=0;ti<uncomplete.length;ti++)
-                        {
-                            if(asMap[uncomplete[ti]]!=undefined)
-                            {
-                               // console.log("!!!"+uncomplete[ti] + "//"+res1._id);
-                                asMap[uncomplete[ti]].emit('possibleMeet',res1._id);
-                            }
-                            else
-                            {
-                                //push methods
-                            }
-                        }
+                        if(uncomplete.length>0)
+                            pmMap[res1._id] = uncomplete;
                     });
                 })
             }
@@ -275,40 +325,92 @@ io.on('connection', function (socket) {
         {
             if(msg!=null && msg!='ERR0')
             {
-                    socket.emit('meetRes2',{valids:msg.Validsfpe,id:data});
+                //console.log(msg);
+                socket.emit('meetRes2',{valids:msg.Valids,id:data});
             }
         })
     });
 
-    socket.on('meetInfo',function(data,fn)
+    socket.on('meetMatch',function(data)
     {
-        meetDB.getMeets(data.meets,function(res)
+        console.log(JSON.stringify(data));
+        meetDB.meetMatch(data.Account,data.sender,function(res)
         {
-            msgDB.get(data.id,function(res2)
+            if(res==0)
             {
-                fn({meet: res,msgs:res2});
-            })
+                pushMsg(data.Account,'有人发起了新嗨羞');
+                accountDB.addMeet(data.Account,data.mid,function(msg1){});
+                meetDB.update(data.mid,data.Account,data.Image,function(msg2){
+                    meetDB.getMeet(data.mid,function(msg3)
+                    {
+                        if(asMap[data.Account]!=undefined)
+                        {
+                            console.log(msg3);
+                            asMap[data.Account].emit('MeetAdd',msg3);
+                        }
+                        else
+                        {
+                        }
+                    })
+                });
+            }
+            else
+            {
+                console.log(JSON.stringify(res));
+                meetDB.successMeet2(res._id,function(msg){});
+                meetDB.successMeet2(data.mid,function(msg){});
+                accountDB.deleteMeet(data.sender,data.mid,function(msg){});
+                if(asMap[data.Account] != undefined)
+                {
+                    asMap[data.Account].emit('successMeetC',{mid:res._id});
+                }
+                else
+                {
+
+                }
+
+                socket.emit('successMeetC',{mid:res._id});
+                socket.emit('successMeetC2',{mid:data.mid});
+
+                accountDB.getNickname(data.sender,function(n1)
+                {
+                    accountDB.getNickname(data.Account,function(n2)
+                    {
+                        accountDB.addFriend(data.sender,data.Account,n2,res.SenderImage,new Date().getTime(),function(msg){});
+                        accountDB.addFriend(data.Account,data.sender,n1,res.ReceiverImage,new Date().getTime(),function(msg){});
+                        if(asMap[data.Account] != undefined)
+                        {
+                            asMap[data.Account].emit('newFriend',{Account:data.sender,Nickname:n1,Image:res.ReceiverImage,Time:new Date().getTime()});
+                        }
+                        else
+                        {
+
+                        }
+                        socket.emit('newFriend',{Account:data.Account,Nickname:n2,Image:res.SenderImage,Time:new Date().getTime()})
+                    })
+                })
+            }
         });
     });
 
-    socket.on('meetMatch',function(data)
+    socket.on('meetUncomplete',function(data)
     {
-        //console.log(JSON.stringify(data));
-        accountDB.addMeet(data.Account,data.mid,function(msg){});
-        pushMsg(data.Account,"有人发起了和你的嗨羞,快去查看吧");
-        meetDB.update(data.mid,data.Account,data.Image,function(msg){
-            meetDB.getMeet(data.mid,function(msg)
+        var uncomplete =   pmMap[data.id];
+        if(uncomplete!=undefined && uncomplete.length>0)
+        {
+            accountDB.updateWaitedMeetings(uncomplete,data.id,function(err){});
+            var ti = 0;
+            for(ti=0;ti<uncomplete.length;ti++)
             {
-                if(asMap[data.Account]!=undefined)
+                if(asMap[uncomplete[ti]]!=undefined)
                 {
-                    console.log(msg);
-                    asMap[data.Account].emit('MeetAdd',msg);
+                    asMap[uncomplete[ti]].emit('possibleMeet',data.id);
                 }
                 else
                 {
                 }
-            })
-        });
+            }
+        }
     });
 
     socket.on('meetRes3',function(data)
@@ -337,7 +439,6 @@ io.on('connection', function (socket) {
 
                 for (ti = 0; ti < res2.length; ti++) {
                     var obj = res2[ti].obj;
-
                     if (obj.SpecialInfo.FaXing.length == 0 || obj.SpecialInfo.YanJing.length == 0 || obj.SpecialInfo.YiFuHuaWen.length == 0
                         || obj.SpecialInfo.YiFuLeiXing.length == 0 || obj.SpecialInfo.YiFuYanSe.length == 0) {
                     }
@@ -348,8 +449,15 @@ io.on('connection', function (socket) {
                         {
                             valid.push({Account:obj.Account,Image:obj.Image});
                         }
+                        else
+                        {
+                            console.log(JSON.stringify(data.filter)+" // "+num);
+                        }
                     }
                 }
+
+                while(valid.length<4)
+                    valid.push({Account:"11fake11",Image:'0'})
 
                 socket.emit('meetImages2',{mid:data.mid,valids:valid,status:'success'});
                 //console.log(valid);
@@ -358,15 +466,15 @@ io.on('connection', function (socket) {
 
         if(data.action=='friend')
         {
-            console.log(data.mid+" // "+data.filter);
+            console.log(JSON.stringify(data));
             meetDB.successMeet(data.mid,data.filter,function(msg){});
-            accountDB.addFriend(data.user1,data.user2,data.n2,data.img2,function(msg){});
+            accountDB.addFriend(data.user1,data.user2,data.n2,data.img2,data.time,function(msg){});
             accountDB.getNickname(data.user1,function(n1)
             {
-                accountDB.addFriend(data.user2,data.user1,n1,data.img1,function(msg){
+                accountDB.addFriend(data.user2,data.user1,n1,data.img1,data.time,function(msg){
                     if(asMap[data.user1] != undefined)
                     {
-                        asMap[data.user1].emit('newFriend',{Account:data.user2,Nickname:data.n2,Image:data.img2});
+                        asMap[data.user1].emit('newFriend',{Account:data.user2,Nickname:data.n2,Image:data.img2,Time:data.time});
                         asMap[data.user1].emit('successMeetC',{mid:data.mid});
                     }
                     else
@@ -375,14 +483,12 @@ io.on('connection', function (socket) {
                     }
                     if(asMap[data.user2] != undefined)
                     {
-                        asMap[data.user2].emit('newFriend',{Account:data.user1,Nickname:n1,Image:data.img1});
+                        asMap[data.user2].emit('newFriend',{Account:data.user1,Nickname:n1,Image:data.img1,Time:data.time});
                     }
                     else
                     {
 
                     }
-                    //console.log(data.user1);
-                    pushMsg(data.user1,"有人和你成为了朋友");
                 });
             })
         }
@@ -405,6 +511,7 @@ io.on('connection', function (socket) {
     socket.on('chatS',function(data)
     {
         console.log(data);
+        pushMsg(data.Target,'有人发给你一条新消息');
         if(asMap[data.Target]!=undefined)
         {
             asMap[data.Target].emit("chatC",data);
@@ -413,17 +520,27 @@ io.on('connection', function (socket) {
         {
             msgDB.add(data.Account,data.Target,data.Text,data.Time,function(msg){});
         }
-        pushMsg(data.Target,"有人给你发送了一条新消息，快去查看吧");
     })
-    socket.on('disconnect', function () {
-        var account = iaMap[socket.id];
-        if (account != undefined) {
-            accountDB.logOut(account,function(msg){});
-            asMap[account] = undefined;
-            iaMap[socket.id] = undefined;
-        }
-    });
 
+    socket.on('imageS',function(data)
+    {
+        console.log(data);
+        if (data.id != undefined && data.id.length>1) {
+            imageDB.get(data.id, function (msg) {
+                socket.emit('imageC',{Data:msg.Data,id:data.id,cid:data.cid,len:data.len});
+            })
+        }
+        else {
+            imageDB.get('0', function (msg) {
+                  socket.emit('imageC',{Data:msg.Data,id:data.id,cid:data.cid,len:data.len});
+            })
+        }
+    })
+
+    socket.on('meetDecrease',function(data)
+    {
+        meetDB.decreaseChance(data.id,function(msg){});
+    })
 });
 
 console.log('Server running at ' + process.env.IP + ":" + process.env.PORT);

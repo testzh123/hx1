@@ -4,7 +4,8 @@
 var mongoose = require('mongoose');
 
 var MyImageSchema = new mongoose.Schema({
-    Data:Buffer,
+    ID: {type:String,index:{unique:true}},
+    Data:String,
     Type:String
 });
 

@@ -9,7 +9,7 @@ var AccountDataSchema = new mongoose.Schema({
     Nickname: {type:String},
     RegistDate:{type:Number,default: 0},
     Sex:{type:String,enum:['男','女'],default: '男'},
-    Image:{type:String,default: ''},
+    Image:{type:String,default: '0'},
     GPSPoint:{type:[Number],default:new Array(0,0),index: '2dsphere'},
     GPSUpdate:{type:Number,default:0},
     SpecialInfo:{FaXing:String,YanJing:String,YiFuLeiXing:String,YiFuYanSe:String,YiFuHuaWen:String,Update:Number},

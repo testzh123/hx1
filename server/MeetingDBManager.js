@@ -20,9 +20,9 @@ exports.clear = function (callback) {
     });
 }
 
-exports.add = function (sender,img,ss,sex,faxing,address,yanjing,yifuleixing,yifuyanse,yifuhuawen,gps,callback) {
+exports.add = function (sender,img,ss,sex,faxing,address,yanjing,yifuleixing,yifuyanse,yifuhuawen,gps,style,callback) {
     var doc = {Sender:sender,SenderImage:img,SenderSex:ss,SenderRequest:{Sex:sex,FaXing:faxing,YanJing:yanjing,YiFuLeiXing:yifuleixing,YiFuYanSe:yifuyanse,YiFuHuaWen:yifuhuawen}
-        ,ReceiverRequest:{Sex:'',FaXing:'',YanJing:'',YiFuLeiXing:'',YiFuYanSe:'',YiFuHuaWen:''},Address:address,UpdatedTime:new Date().getTime(),GPSPoint:gps};
+        ,ReceiverRequest:{Sex:'',FaXing:style.FaXing,YanJing:style.YanJing,YiFuLeiXing:style.YiFuLeiXing,YiFuYanSe:style.YiFuYanSe,YiFuHuaWen:style.YiFuHuaWen},Address:address,UpdatedTime:new Date().getTime(),GPSPoint:gps};
     var obj = new myModel(doc);
     obj.save(function (error) {
         if (error) {
@@ -52,7 +52,10 @@ exports.getMeets = function(mids,callback)
         if (error)
             callback('Err0');
         else
+        {
+            console.log('meets get OK .');
             callback(res);
+        }
     })
 }
 
@@ -149,3 +152,61 @@ exports.successMeet = function(mid,filter,callback)
     })
 }
 
+exports.successMeet2 = function(mid,callback)
+{
+    myModel.update({_id:mid},{Status:2,UpdatedTime:new Date().getTime()},{}, function (error, res)
+    {
+        if (error)
+        {
+            callback('Err0');
+        }
+        else
+        {
+            console.log('Meet '+mid+" Success OK .");
+            callback(0);
+        }
+    })
+}
+
+exports.decreaseChance = function(id,callback)
+{
+    myModel.update({_id:id},{$inc:{Tries:-1}},{},function(error)
+    {
+        if (error)
+        {
+            callback('Err0');
+        }
+        else
+        {
+            console.log('Meet '+id+" decrease OK .");
+            callback(0);
+        }
+    })
+}
+
+exports.meetMatch = function(sender,receiver,callback)
+{
+    myModel.findOne({Sender:sender,Receiver:receiver,Status:1},{Sender:1,Receiver:1,SenderImage:1,ReceiverImage:1},{},function(error,res)
+    {
+        if(error)
+            callback(0);
+        else
+        {
+            if(res==null)
+                callback(0);
+            else
+            {
+                console.log('found');
+                callback(res);
+            }
+        }
+    })
+}
+
+exports.getAll = function(callback)
+{
+    myModel.find({},{},{},function(err,res)
+    {
+        callback(res);
+    })
+}

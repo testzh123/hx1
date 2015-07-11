@@ -1,32 +1,3 @@
-function myAlert(msg) {
-    if (msg.length > 0) {
-        $(".alert1P").text(msg);
-        $(".alert1").fadeIn(0, function () {
-            setTimeout(function () {
-                $(".alert1").fadeOut(2000);
-            }, 1000)
-        });
-    }
-}
-
-function calcCrow(lat1, lon1, lat2, lon2) {
-    var R = 6371; // km
-    var dLat = toRad(lat2 - lat1);
-    var dLon = toRad(lon2 - lon1);
-    var lat1 = toRad(lat1);
-    var lat2 = toRad(lat2);
-    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
-    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    var d = R * c;
-    return d;
-}
-
-// Converts numeric degrees to radians
-function toRad(Value) {
-    return Value * Math.PI / 180;
-}
-
 angular.module('starter', ['ionic', 'starter.controllers', 'DBService'])
 
     .run(function ($ionicPlatform, $rootScope, $state, $ionicPopup, GPS) {
@@ -42,67 +13,89 @@ angular.module('starter', ['ionic', 'starter.controllers', 'DBService'])
             }
 
             moment.locale('zh-cn');
-            window.plugins.jPushPlugin.init();
+            setTimeout(function()
+            {
+                window.plugins.jPushPlugin.init();
+            },500);
+
 
             $rootScope.jumpTo = function (state) {
                 $state.go(state);
             }
 
-            $rootScope.socketInit = function () {
+            $rootScope.tempImages = {};
 
+            $rootScope.socketInit = function () {
 
                 $rootScope.socket = io.connect(serverURL, {'force new connection': true});
 
                 $rootScope.socket.on('connect', function () {
-                    if ($rootScope.online == undefined) {
+                    setTimeout(function()
+                    {
                         window.plugins.jPushPlugin.setAlias($rootScope.userInfo.Account);
-                        $rootScope.socket.emit('setAccount', $rootScope.userInfo.Account);
-                        $rootScope.socket.emit('meetInfo', {meets :$rootScope.userInfo.Meetings,id:$rootScope.userInfo.Account}, function (resx) {
-                            var res0 = resx.meet;
-                            var res1 = resx.msgs;
-                            $rootScope.online = 123;
-                            // var res1 = JSON.parse(res0);
-                            //  alert(res1.length);
-                            var m = 0;
-                            for (m = 0; m < res0.length; m++) {
-                                $rootScope.userInfo.meetInfo[res0[m]._id] = res0[m];
-                            }
-                            for(m=0;m<res1.length;m++)
-                            {
-                                //alert(res1[m].Text);
-                                if($rootScope.userInfo.chat[res1[m].Account]==undefined)
-                                    $rootScope.userInfo.chat[res1[m].Account] = [];
-                                if($rootScope.userInfo.chatCount[res1[m].Account]==undefined)
-                                    $rootScope.userInfo.chatCount[res1[m].Account] =0;
-                                $rootScope.$apply(function()
-                                {
-                                    $rootScope.userInfo.chatCount[res1[m].Account] = $rootScope.userInfo.chatCount[res1[m].Account] + 1 ;
-                                    $rootScope.userInfo.chat[res1[m].Account].push(res1[m]);
-                                });
-                            }
-                            $rootScope.jumpTo('accountMain');
+                    },500);
+                    $rootScope.socket.emit('setAccount', $rootScope.userInfo.Account);
+                    $rootScope.socket.emit('myInfo', {
+                        uid: $rootScope.userInfo.Account
+                    }, function (resx) {
+                        $rootScope.userInfo = resx.uinfo;
+                        $rootScope.userInfo.meetInfo = {};
+                        $rootScope.userInfo.newFriendNum = 0;
+                        $rootScope.userInfo.chat = {};
+                        $rootScope.userInfo.chatCount = {};
+                        var res0 = resx.meet;
+                        var res1 = resx.msgs;
+                        var m = 0;
+                        for (m = 0; m < res0.length; m++) {
+                            $rootScope.userInfo.meetInfo[res0[m]._id] = res0[m];
+                        }
+                        for (m = 0; m < res1.length; m++) {
+                            if ($rootScope.userInfo.chat[res1[m].Account] == undefined)
+                                $rootScope.userInfo.chat[res1[m].Account] = [];
+                            if ($rootScope.userInfo.chatCount[res1[m].Account] == undefined)
+                                $rootScope.userInfo.chatCount[res1[m].Account] = 0;
+                            $rootScope.$apply(function () {
+                                $rootScope.userInfo.chatCount[res1[m].Account] = $rootScope.userInfo.chatCount[res1[m].Account] + 1;
+                                $rootScope.userInfo.chat[res1[m].Account].push(res1[m]);
+                            });
+                        }
+                        $rootScope.jumpTo('accountMain');
+                        $rootScope.online = 's0';
+                    });
+                });
+
+                $rootScope.socket.on('imageC', function (data) {
+                    //setTimeout(function()
+                    //{
+                    var img = new Image();
+                    img.src = data.Data;
+                    img.onload = function () {
+                        $rootScope.$apply(function () {
+                            $rootScope.tempImages [data.id] = {w: img.width, h: img.height, Data: data.Data};
+                            showImage(data.id, data.cid, data.len, $rootScope);
                         });
                     }
+                    //},10000);
                 });
 
                 $rootScope.socket.on('quit', function (msg) {
+
                     $rootScope.online = undefined;
                     $rootScope.socket.disconnect();
                     $rootScope.socket = undefined;
                     $rootScope.userInfo = {};
+                    $state.go('accountLogin');
                     GPS.clear();
+                    $rootScope.online = 's0';
                     var alertPopup = $ionicPopup.alert({
                         title: '您的账号在其他地方登入!',
                         template: '如不是本人操作,请立刻修改密码.'
                     });
-                    alertPopup.then(function (res) {
-                        $state.go('accountLogin');
-                    });
                 });
 
-                $rootScope.socket.on('updateImage2', function (msg) {
-                    $rootScope.userInfo.Image = msg;
-                    $("#myPhoto").attr("src", serverURL + "image?id=" + $rootScope.userInfo.Image);
+                $rootScope.socket.on('updateImageC', function (msg) {
+                    //$rootScope.tempImages[msg] = $rootScope.tempImages[$rootScope.userInfo.Image];
+                    //$rootScope.userInfo.Image = msg;
                 });
 
                 $rootScope.socket.on('newValid', function (id) {
@@ -113,17 +106,24 @@ angular.module('starter', ['ionic', 'starter.controllers', 'DBService'])
 
                 $rootScope.socket.on('meetRes1', function (data) {
                     if (data.status == 'success') {
-                        $rootScope.userInfo.Meetings.push(data.meet._id);
-                        $rootScope.userInfo.meetInfo[data.meet._id] = data.meet;
-                        $rootScope.userInfo.meetInfo[data.meet._id].Valids = data.valids;
-                        $rootScope.userInfo.currentMeet = data.meet._id;
-                        $rootScope.userInfo.valids = data.valids;
+                        $rootScope.$apply(function()
+                        {
+                            $rootScope.userInfo.Meetings.push(data.meet._id);
+                            $rootScope.userInfo.meetInfo[data.meet._id] = data.meet;
+                            $rootScope.userInfo.meetInfo[data.meet._id].Valids = data.valids;
+                            $rootScope.userInfo.currentMeet = data.meet._id;
+                            $rootScope.userInfo.valids = data.valids;
+                            $rootScope.userInfo.meetInfo[data.id].before = '几秒前';
+                        });
                         $state.go('imageReview');
                     }
                     else {
                         var alertPopup = $ionicPopup.alert({
                             title: '发送失败',
                             template: '30S内只能发送一次.'
+                        });
+                        alertPopup.then(function () {
+                            $rootScope.jumpTo('accountMain');
                         });
                     }
                 });
@@ -137,21 +137,24 @@ angular.module('starter', ['ionic', 'starter.controllers', 'DBService'])
 
                 $rootScope.socket.on('possibleMeet', function (mid) {
                     $rootScope.userInfo.WaitMeetings.push(mid);
-                    if ($state.$current == 'styleSetting') {
-                    }
-                    else {
-                        if ($rootScope.userInfo.lastStyleConf == undefined || new Date().getTime() - $rootScope.userInfo.lastStyleConf > 60000) {
-                            $rootScope.userInfo.lastStyleConf = new Date().getTime();
-                            var confirmPopup = $ionicPopup.confirm({
-                                title: '您周围的人发起了嗨羞',
-                                template: '是否前往更新您的个人信息?'
-                            });
-                            confirmPopup.then(function (res) {
-                                if (res) {
-                                    $rootScope.jumpTo('styleSetting');
-                                } else {
-                                }
-                            });
+                    if ($rootScope.userInfo.lastStyleNotify == undefined || new Date().getTime() - $rootScope.userInfo.lastStyleNotify >= 600000) {
+                        $rootScope.userInfo.lastStyleNotify = new Date().getTime();
+                        if ($state.$current == 'styleSetting') {
+                        }
+                        else {
+                            if ($rootScope.userInfo.lastStyleConf == undefined || new Date().getTime() - $rootScope.userInfo.lastStyleConf > 60000) {
+                                $rootScope.userInfo.lastStyleConf = new Date().getTime();
+                                var confirmPopup = $ionicPopup.confirm({
+                                    title: '您周围的人发起了嗨羞',
+                                    template: '是否前往更新您的个人信息?'
+                                });
+                                confirmPopup.then(function (res) {
+                                    if (res) {
+                                        $rootScope.jumpTo('styleSetting');
+                                    } else {
+                                    }
+                                });
+                            }
                         }
                     }
                 });
@@ -183,6 +186,22 @@ angular.module('starter', ['ionic', 'starter.controllers', 'DBService'])
                         $rootScope.userInfo.newFriendNum = $rootScope.userInfo.newFriendNum + 1;
                         $rootScope.userInfo.Friends.push(data);
                     });
+                    var confirmPopup = $ionicPopup.confirm({
+                        title: '新的好友',
+                        template: '您已经与'+data.Nickname+'成功成为好友，是否前去聊天?'
+                    });
+                    confirmPopup.then(function (res) {
+                        if (res) {
+                            var x = data;
+                            $rootScope.userInfo.chatTarget = x;
+                            if ($rootScope.userInfo.chatCount[x.Account] == undefined)
+                                $rootScope.userInfo.chatCount[x.Account] = 0;
+                            if ($rootScope.userInfo.chat[x.Account] == undefined)
+                                $rootScope.userInfo.chat[x.Account] = [];
+                            $rootScope.jumpTo('chat');
+                        } else {
+                        }
+                    });
                 });
 
                 $rootScope.socket.on('deleteFriendC', function (data) {
@@ -198,35 +217,43 @@ angular.module('starter', ['ionic', 'starter.controllers', 'DBService'])
                     }
                 });
 
-                $rootScope.socket.on('chatC',function(data)
-                {
-                    if($rootScope.userInfo.chat[data.Account]==undefined)
-                        $rootScope.userInfo.chat[data.Account]=[];
-                    if($rootScope.userInfo.chatCount[data.Account] == undefined)
+                $rootScope.socket.on('chatC', function (data) {
+                    if ($rootScope.userInfo.chat[data.Account] == undefined)
+                        $rootScope.userInfo.chat[data.Account] = [];
+                    if ($rootScope.userInfo.chatCount[data.Account] == undefined)
                         $rootScope.userInfo.chatCount[data.Account] = 0;
                     $rootScope.$apply(function () {
                         $rootScope.userInfo.chat[data.Account].push(data);
-                        $rootScope.userInfo.chatCount[data.Account] = $rootScope.userInfo.chatCount[data.Account]+1;
+                        $rootScope.userInfo.chatCount[data.Account] = $rootScope.userInfo.chatCount[data.Account] + 1;
                     });
                 })
 
-                $rootScope.socket.on('successMeetC',function(data)
-                {
+                $rootScope.socket.on('successMeetC', function (data) {
                     $rootScope.$apply(function () {
                         $rootScope.userInfo.meetInfo[data.mid].Status = 2;
-                        $rootScope.userInfo.meetInfo[id].Alert = 'new';
+                        $rootScope.userInfo.meetInfo[data.mid].Alert = 'new';
                         $rootScope.userInfo.meetInfo[data.mid].UpdatedTime = new Date().getTime();
                     });
                 })
 
+                $rootScope.socket.on('successMeetC2', function (data) {
+                    $rootScope.$apply(function () {
+                        delete $rootScope.userInfo.meetInfo[data.mid];
+                    });
+                })
+
                 $rootScope.socket.on("disconnect", function (msg) {
-                    $rootScope.online = undefined;
+                    if ($rootScope.online == 's2') {
+
+                    }
+                    else {
+                        alert("断线了");
+                    }
+                    $rootScope.online = 's0';
                 });
 
                 $rootScope.socket.on('reconnect', function () {
-                    $rootScope.online = 123;
-                    $rootScope.socket.emit('setAccount', $rootScope.userInfo.Account);
-                    alert("重连成功");
+                    alert("已重连");
                 })
             }
             $rootScope.userInfo = {};
@@ -285,47 +312,101 @@ angular.module('starter', ['ionic', 'starter.controllers', 'DBService'])
                     }
                 }
             })
-            .state('psFaxing', {
-                url: '/psFaxing',
+            .state('psFaxingF', {
+                url: '/psFaxingF',
                 views: {
                     'main-view': {
-                        templateUrl: 'templates/personStyle/faxing.html',
+                        templateUrl: 'templates/personStyle/faxingF.html',
                         controller: 'styleSettingCtrl2'
                     }
                 }
             })
-            .state('psYanjing', {
-                url: '/psYanjing',
+            .state('psYanjingF', {
+                url: '/psYanjingF',
                 views: {
                     'main-view': {
-                        templateUrl: 'templates/personStyle/yanjing.html',
+                        templateUrl: 'templates/personStyle/yanjingF.html',
                         controller: 'styleSettingCtrl2'
                     }
                 }
             })
-            .state('psYifuhuawen', {
-                url: '/psYifuhuawen',
+            .state('psYifuhuawenF', {
+                url: '/psYifuhuawenF',
                 views: {
                     'main-view': {
-                        templateUrl: 'templates/personStyle/yifuhuawen.html',
+                        templateUrl: 'templates/personStyle/yifuhuawenF.html',
                         controller: 'styleSettingCtrl2'
                     }
                 }
             })
-            .state('psYifuleixing', {
-                url: '/psYifuleixing',
+            .state('psYifuleixingF', {
+                url: '/psYifuleixingF',
                 views: {
                     'main-view': {
-                        templateUrl: 'templates/personStyle/yifuleixing.html',
+                        templateUrl: 'templates/personStyle/yifuleixingF.html',
                         controller: 'styleSettingCtrl2'
                     }
                 }
             })
-            .state('psYifuyanse', {
-                url: '/psYifuyanse',
+            .state('psYifuyanseF', {
+                url: '/psYifuyanseF',
                 views: {
                     'main-view': {
-                        templateUrl: 'templates/personStyle/yifuyanse.html',
+                        templateUrl: 'templates/personStyle/yifuyanseF.html',
+                        controller: 'styleSettingCtrl2'
+                    }
+                }
+            })
+            .state('psFaxingM', {
+                url: '/psFaxingM',
+                views: {
+                    'main-view': {
+                        templateUrl: 'templates/personStyle/faxingM.html',
+                        controller: 'styleSettingCtrl2'
+                    }
+                }
+            })
+            .state('psYanjingM', {
+                url: '/psYanjingM',
+                views: {
+                    'main-view': {
+                        templateUrl: 'templates/personStyle/yanjingM.html',
+                        controller: 'styleSettingCtrl2'
+                    }
+                }
+            })
+            .state('psYifuhuawenM', {
+                url: '/psYifuhuawenM',
+                views: {
+                    'main-view': {
+                        templateUrl: 'templates/personStyle/yifuhuawenM.html',
+                        controller: 'styleSettingCtrl2'
+                    }
+                }
+            })
+            .state('psYifuleixingM', {
+                url: '/psYifuleixingM',
+                views: {
+                    'main-view': {
+                        templateUrl: 'templates/personStyle/yifuleixingM.html',
+                        controller: 'styleSettingCtrl2'
+                    }
+                }
+            })
+            .state('psYifuyanseM', {
+                url: '/psYifuyanseM',
+                views: {
+                    'main-view': {
+                        templateUrl: 'templates/personStyle/yifuyanseM.html',
+                        controller: 'styleSettingCtrl2'
+                    }
+                }
+            })
+            .state('psXingbie', {
+                url: 'psXingbie',
+                views: {
+                    'main-view': {
+                        templateUrl: 'templates/personStyle/xingbie.html',
                         controller: 'styleSettingCtrl2'
                     }
                 }
@@ -335,60 +416,6 @@ angular.module('starter', ['ionic', 'starter.controllers', 'DBService'])
                 views: {
                     'main-view': {
                         templateUrl: 'templates/filterSetting.html'
-                    }
-                }
-            })
-            .state('msXingbie', {
-                url: '/msXingbie',
-                views: {
-                    'main-view': {
-                        templateUrl: 'templates/filter/xingbie.html',
-                        controller: 'filterSettingCtrl2'
-                    }
-                }
-            })
-            .state('msFaxing', {
-                url: '/msFaxing',
-                views: {
-                    'main-view': {
-                        templateUrl: 'templates/filter/faxing.html',
-                        controller: 'filterSettingCtrl2'
-                    }
-                }
-            })
-            .state('msYanjing', {
-                url: '/msYanjing',
-                views: {
-                    'main-view': {
-                        templateUrl: 'templates/filter/yanjing.html',
-                        controller: 'filterSettingCtrl2'
-                    }
-                }
-            })
-            .state('msYifuhuawen', {
-                url: '/msYifuhuawen',
-                views: {
-                    'main-view': {
-                        templateUrl: 'templates/filter/yifuhuawen.html',
-                        controller: 'filterSettingCtrl2'
-                    }
-                }
-            })
-            .state('msYifuleixing', {
-                url: '/msYifuleixing',
-                views: {
-                    'main-view': {
-                        templateUrl: 'templates/filter/yifuleixing.html',
-                        controller: 'filterSettingCtrl2'
-                    }
-                }
-            })
-            .state('msYifuyanse', {
-                url: '/msYifuyanse',
-                views: {
-                    'main-view': {
-                        templateUrl: 'templates/filter/yifuyanse.html',
-                        controller: 'filterSettingCtrl2'
                     }
                 }
             })

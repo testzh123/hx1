@@ -1,4 +1,4 @@
-<ion-view view-title="{{userInfo.Nickname}}的嗨羞">
+<ion-view view-title="{{userInfo.Nickname}}的嗨羞" can-swipe-back=false>
 
     <ion-nav-buttons side="left">
         <button class="button button-icon icon ion-plus-round"  ng-click="filterUI()"></button>
@@ -13,11 +13,11 @@
     <ion-content id="mainContent">
 
             <div ng-repeat="x in userInfo.meetInfo" class="item"  style="height:120px;width:100%;" ng-click="doMeet(x._id)">
-                <img ng-src="{{getSrc(x)}}" style="height:80px;width:80px;position:absolute;left:20px;top:20px;border:none;"></img>
+                <img ng-src="{{getSrc(x)}}" id="img{{x._id}}" style="height:80px;width:80px;position:absolute;left:20px;top:20px;border:none;"></img>
                 <p style="position:absolute;top:10px;font-weight:600;font-size:18px;left:120px;">{{x.Address}}</p>
                 <p style="position:absolute;top:50px;font-weight:600;font-size:18px;left:120px;" ng-bind="getStatus(x)"></p>
-                <p style="position:absolute;top:90px;font-weight:600;font-size:18px;left:120px;" ng-bind="getTime(x.UpdatedTime)"></p>
-                <span class="badge badge-assertive" style="position:absolute; top:90px;right:30px;width:50px;height:25px;" ng-bind="getInfo(x)"></span>
+                <p style="position:absolute;top:90px;font-weight:600;font-size:18px;left:120px;">{{x.before}}</p>
+                <span class="badge badge-assertive" style="position:absolute; top:90px;right:30px;width:50px;height:25px;">{{x.Alert}}</span>
             </div>
 
     </ion-content>

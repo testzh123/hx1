@@ -1,4 +1,4 @@
-<ion-view view-title="{{userInfo.Nickname}}的朋友圈">
+<ion-view view-title="{{userInfo.Nickname}}的朋友圈" can-swipe-back=false>
 
     <ion-nav-title>
         {{userInfo.Nickname}}的朋友圈
@@ -7,8 +7,9 @@
     <ion-content id="mainContent">
         <ion-list>
             <ion-item ng-repeat="x in userInfo.Friends" ng-click="openChat(x)" style="height:100px;">
-                <img ng-src="{{url1+x.Image}}" style="height:80px;width:80px;top:-5px;position:relative;"></img>
-                <p style="position:absolute;left:120px;top:35px;font-size:30px;font-weight:500;">{{x.Nickname}}</p>
+                <img ng-src="{{getSrc(x)}}" id="img{{x.Image}}" style="height:80px;top:-5px;position:relative;"></img>
+                <p style="position:absolute;left:160px;top:25px;font-size:25px;font-weight:500;">{{x.Nickname}}</p>
+                <p style="position:absolute;left:160px;top:60px;font-size:15px;">邂逅时间:{{mom(x.Time,'x').format('YYYY-MM-DD')}}</p>
                 <span class="badge badge-assertive" style="position:absolute;top:30px;right:40px;width:50px;" ng-bind="getNew(x.Account)"></span>
                 <ion-option-button class="button-assertive" ng-click="deleteFriend(x)">
                     删除好友

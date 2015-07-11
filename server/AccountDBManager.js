@@ -49,52 +49,21 @@ exports.add = function (account, password, name, sex, callback) {
     });
 }
 
-exports.getInfo = function (account, password, callback) {
-    myModel.findOne({Account: account, Password: password}, {}, {}, function (error, result) {
+exports.logIn = function (account, password, callback) {
+    myModel.findOne({Account: account, Password: password}, {Account:1}, {}, function (error, result) {
         if (error) {
             console.log("Account DB error : " + error.message);
             callback('{"Status":"服务器错误!"}');
         }
         else {
             if (result == null) {
-                //console.log(num+" // ");
                 callback('{"Status":"账号或者密码错误"}');
             }
             else {
-                var t1 = JSON.stringify(result);
-                var t2 = t1.substring(0, t1.length - 1);
-                t2 = t2 + ',"Status":"success"}'
-                t2.Status = "success";
-                callback(t2);
+                callback( '{"Status":"success"}');
             }
         }
     });
-}
-
-exports.logIn = function (account, callback) {
-    myModel.update({Account: account}, {Online: 1}, {}, function (error) {
-        if (error) {
-            console.log("Account DB error : " + error.message);
-            callback('Err0');
-        }
-        else {
-            console.log("Account " + account + " log in . ");
-            callback(0);
-        }
-    })
-}
-
-exports.logOut = function (account, callback) {
-    myModel.update({Account: account}, {Online: 0}, {}, function (error) {
-        if (error) {
-            console.log("Account DB error : " + error.message);
-            callback('Err0');
-        }
-        else {
-            console.log("Account " + account + " log out . ");
-            callback(0);
-        }
-    })
 }
 
 exports.getAccount = function (account, callback) {
@@ -171,7 +140,7 @@ exports.searchNear = function (sex, cood, mids, callback) {
 
 exports.addMeet = function (account, mid, callback) {
     myModel.update({Account: account}, {
-            $push: {Meetings: mid}, 'MeetingSent.update': new Date().getTime()
+            $push: {Meetings: mid}
         }, {}, function (err) {
             if(err)
                 callback('Err1');
@@ -181,6 +150,23 @@ exports.addMeet = function (account, mid, callback) {
             }
         }
     )
+}
+
+exports.deleteMeet = function(account,mid,callback)
+{
+    myModel.update({Account:account},{$pull : {Meetings: mid}},{},function(err)
+    {
+        if(err)
+        {
+            console.log(err);
+            callback('ERR1');
+        }
+        else
+        {
+            console.log(account+"Meet Delete OK");
+            callback(0);
+        }
+    })
 }
 
 exports.clearMeet = function(account,callback)
@@ -268,9 +254,9 @@ exports.getImages = function(accounts,callback)
     })
 }
 
-exports.addFriend = function(account,uid,name,img,callback)
+exports.addFriend = function(account,uid,name,img,time,callback)
 {
-    myModel.update({Account:account},{$push : {Friends : {Account:uid,Nickname:name,Image:img}}},{},function(err)
+    myModel.update({Account:account},{$push : {Friends : {Account:uid,Nickname:name,Image:img,Time:time}}},{},function(err)
     {
         if(err)
         {
@@ -318,6 +304,23 @@ exports.getNickname = function(account,callback)
                 callback(null);
             else
                 callback(res.Nickname);
+        }
+    })
+}
+
+exports.clearFriends = function(account,callback)
+{
+    myModel.update({Account:account},{Friends : []},{},function(err)
+    {
+        if(err)
+        {
+            console.log(err);
+            callback('ERR1');
+        }
+        else
+        {
+            console.log(account+" Friends Clear OK");
+            callback(0);
         }
     })
 }

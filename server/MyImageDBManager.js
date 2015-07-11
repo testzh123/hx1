@@ -21,8 +21,8 @@ exports.clear = function (callback) {
     });
 }
 
-exports.add = function (image, type, callback) {
-    var doc = {Data: image, Type: type};
+exports.add = function (id,image, type, callback) {
+    var doc = {ID:id,Data: image, Type: type};
     var obj = new myModel(doc);
     obj.save(function (error) {
         if (error) {
@@ -36,9 +36,7 @@ exports.add = function (image, type, callback) {
 
 exports.get = function(id,callback)
 {
-    //console.log(id);
-    myModel.findOne({_id:id}, {}, {}, function (error, result) {
-        //console.log("23456");
+    myModel.findOne({ID:id}, {}, {}, function (error, result) {
         if (error) {
             console.log("Image DB error : " + error.message);
             callback(1);
@@ -49,7 +47,6 @@ exports.get = function(id,callback)
                 callback(2);
             }
             else {
-                //console.log(result);
                callback(result);
             }
         }
@@ -73,3 +70,4 @@ exports.getAll = function(callback)
         }
     });
 }
+
